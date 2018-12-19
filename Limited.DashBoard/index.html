@@ -1,0 +1,327 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>网关服务 - 控制面板</title>
+    <script src="./vue.min.js"></script>
+    <link rel="stylesheet" href="./css/layui.css" />
+    <script src="./layui.js"></script>
+    <script src="./axios.min.js"></script>
+    <script src="./core-min.js"></script>
+    <script src="./enc-base64-min.js"></script> 
+
+    <style>
+        #app {
+            margin-top: 20px;
+        }
+
+        .layui-input-block {
+            margin-left: 200px !important;
+        }
+
+        .layui-form-label {
+            width: 160px !important;
+        }
+
+        .layui-timeline-item {
+            position: static !important;
+        }
+
+        body {
+            margin: 8px !important;
+        }
+
+        .layui-side, .layui-body {
+            top: 0 !important;
+        }
+
+        .layui-col-xs9 {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+    <div id="app">
+        <div class="layui-layout layui-layout-admin">
+            <div class="layui-side layui-bg-black">
+                <div class="layui-side-scroll">
+                    <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+                    <ul class="layui-nav layui-nav-tree" lay-filter="test" v-for="(item,index) in KeyValue">
+                        <li :class="[ChooseIndex==index ? 'layui-nav-item layui-this' : 'layui-nav-item']" @click="ShowInfo(item.Target,index)"><a href="javascript:;">{{item.Target}}</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="layui-body">
+                <!-- 内容主体区域 -->
+                <div style="padding: 15px;">
+                    <div class="layui-col-xs9 layui-layer-border" v-for="(item,key) of SingleValue">
+                        <div class="layui-row layui-col-space5" style="margin:10px;">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">配置文件名称：</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="title" required lay-verify="required" placeholder="请输入配置文件名称" autocomplete="off" class="layui-input" v-model="item.Target" ref="Target">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-row layui-col-space5">
+                            <div class="layui-collapse" lay-accordion>
+                                <div class="layui-colla-item">
+                                    <h2 class="layui-colla-title">基础配置</h2>
+                                    <div class="layui-colla-content layui-show">
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">源路径：</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="title" required lay-verify="required" placeholder="请输入源路径" autocomplete="off" class="layui-input" v-model="item.SourcePathRegex">
+                                            </div>
+                                        </div>
+
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">请求方法：</label>
+                                            <div class="layui-input-block">
+                                                <select name="city" lay-verify="required" v-model="item.HttpMethods" lay-search="" class="layui-select">
+                                                    <option value="">直接选择或搜索选择</option>
+                                                    <option v-for="maker in HttpMethodsOptions" v-bind:value="maker.value">{{ maker.label }}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">版本号：</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="title" required lay-verify="required" placeholder="请输入版本号" autocomplete="off" class="layui-input" v-model="item.Version">
+                                            </div>
+                                        </div>
+
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">目标服务：</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="title" required lay-verify="required" placeholder="请输入目标服务地址" autocomplete="off" class="layui-input" v-model="item.TargetService">
+                                            </div>
+                                        </div>
+
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">目标正则表达式：</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="title" required lay-verify="required" placeholder="请输入目标正则表达式" autocomplete="off" class="layui-input" v-model="item.TargetPathRegex">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="layui-colla-item" v-for="(QItem,key) in item.QoSOption">
+                                    <h2 class="layui-colla-title">质量管理</h2>
+                                    <div class="layui-colla-content">
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">重试次数：</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="title" required lay-verify="required" placeholder="请输入重试次数" autocomplete="off" class="layui-input" v-model="QItem.MaxRetryCount">
+                                            </div>
+                                        </div>
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">重试间隔的毫秒数：</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="title" required lay-verify="required" placeholder="请输入重试次数" autocomplete="off" class="layui-input" v-model="QItem.RetryIntervalMilliseconds">
+                                            </div>
+                                        </div>
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">是否启用熔断：</label>
+                                            <div class="layui-input-block">
+                                                <div class="layui-input-block">
+                                                    <input type="checkbox" lay-skin="switch" v-model="QItem.IsEnableBreaker" name="QItem.IsEnableBreaker ? 'open' : 'close'" lay-text="启用|停用">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">熔断前出现允许错误几次：</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="title" required lay-verify="required" placeholder="请输入重试次数" autocomplete="off" class="layui-input" v-model="QItem.ExceptionsAllowedBeforeBreaking">
+                                            </div>
+                                        </div>
+
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">熔断多长时间：</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="title" required lay-verify="required" placeholder="请输入重试次数" autocomplete="off" class="layui-input" v-model="QItem.MillisecondsOfBreak">
+                                            </div>
+                                        </div>
+
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">检测超时：</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="title" required lay-verify="required" placeholder="请输入超时间隔" autocomplete="off" class="layui-input" v-model="QItem.TimeOutMilliseconds">
+                                            </div>
+                                        </div>
+
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">缓存多少毫秒：</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="title" required lay-verify="required" placeholder="请输入缓存时间" autocomplete="off" class="layui-input" v-model="QItem.CacheTTLMilliseconds">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="layui-row layui-col-space5" style="margin:10px;">
+                            <div class="layui-form-item">
+                                <button class="layui-btn layui-btn-danger layui-btn-radius" @click="SubmitKeyValue">保存</button>
+                                <button class="layui-btn layui-btn-normal layui-btn-radius" @click="CancelKeyValue">取消</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-footer">
+                <!-- 底部固定区域 -->
+                © layui.com - 底部固定区域
+            </div>
+        </div>
+    </div>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                HttpMethodsOptions: [
+                    { value: 'POST', label: 'POST' },
+                    { value: 'GET', label: 'GET' },
+                ],
+                BoolOptions: [
+                    { value: 'true', label: 'true' },
+                    { value: 'false', label: 'false' },
+                ],
+                IsEdit: false,
+                KeyValue: [{
+                    Target: '',
+                    SourcePathRegex: '',
+                    HttpMethods: '',
+                    Version: '',
+                    TargetService: '',
+                    TargetPathRegex: '',
+                    QoSOption: [{
+                        MaxRetryCount: '0',
+                        RetryIntervalMilliseconds: '100',
+                        IsEnableBreaker: false,
+                        ExceptionsAllowedBeforeBreaking: '3',
+                        MillisecondsOfBreak: '1000',
+                        TimeOutMilliseconds: '0',
+                        CacheTTLMilliseconds: '0'
+                    }]
+                }],
+                SingleValue: [{
+                    Target: '',
+                    SourcePathRegex: '',
+                    HttpMethods: '',
+                    Version: '',
+                    TargetService: '',
+                    TargetPathRegex: '',
+                    QoSOption: [{
+                        MaxRetryCount: '0',
+                        RetryIntervalMilliseconds: '100',
+                        IsEnableBreaker: false,
+                        ExceptionsAllowedBeforeBreaking: '3',
+                        MillisecondsOfBreak: '1000',
+                        TimeOutMilliseconds: '0',
+                        CacheTTLMilliseconds: '0'
+                    }]
+                }],
+                ChooseIndex: "-1"
+            },
+            created: function () {
+                this.GetKeyValue();
+            },
+            methods: {
+                GetKeyValue: function () {
+                    var _this = this;
+                    //发送get请求
+                    axios.get('/limit/consul/get').then(function (res) {
+                        console.log(res);
+                        if (res.data[0].Value != null) {
+                            var encData = CryptoJS.enc.Base64.parse(res.data[0].Value);
+                            var dataJson = eval(encData.toString(CryptoJS.enc.Utf8));
+                            _this.$data.KeyValue = dataJson;
+                        } else {
+                            _this.$data.KeyValue = [{
+                                Target: '',
+                                SourcePathRegex: '',
+                                HttpMethods: '',
+                                Version: '',
+                                TargetService: '',
+                                TargetPathRegex: '',
+                                QoSOption: [{
+                                    MaxRetryCount: '0',
+                                    RetryIntervalMilliseconds: '100',
+                                    IsEnableBreaker: false,
+                                    ExceptionsAllowedBeforeBreaking: '3',
+                                    MillisecondsOfBreak: '1000',
+                                    TimeOutMilliseconds: '0',
+                                    CacheTTLMilliseconds: '0'
+                                }]
+                            }];
+                        }
+                    });
+                },
+                SubmitKeyValue: function () {
+                    debugger;
+                    var _this = this;
+                    console.log(_this.$data.KeyValue);
+                    if (!_this.$data.IsEdit) {
+                        _this.$data.KeyValue.push(_this.$data.SingleValue[0]);
+                    }
+                    var params = new URLSearchParams();
+                    params.append('KeyValue', JSON.stringify(_this.$data.KeyValue));
+
+                    //发送post请求
+                    axios.post('/limit/consul/put', params).then(function (res) {
+                        console.log(res);
+                        alert(res.data);
+                    }).catch(function (error) {
+                        alert(error);
+                    });
+                },
+                ShowInfo: function (objName, objIndex) {
+                    var _this = this;
+                    _this.$data.SingleValue = _this.$data.KeyValue.filter(function (tag) {
+                        return tag.Target == objName;
+                    });
+                    _this.$data.ChooseIndex = objIndex;
+                    _this.$data.IsEdit = true;
+
+                    console.log(_this.$data.SingleValue);
+                },
+                CancelKeyValue: function () {
+                    var _this = this;
+                    _this.$data.SingleValue = [{
+                        Target: '',
+                        SourcePathRegex: '',
+                        HttpMethods: '',
+                        Version: '',
+                        TargetService: '',
+                        TargetPathRegex: '',
+                        QoSOption: [{
+                            MaxRetryCount: '0',
+                            RetryIntervalMilliseconds: '100',
+                            IsEnableBreaker: false,
+                            ExceptionsAllowedBeforeBreaking: '3',
+                            MillisecondsOfBreak: '1000',
+                            TimeOutMilliseconds: '0',
+                            CacheTTLMilliseconds: '0'
+                        }]
+                    }];
+                }
+            }
+        })
+
+        layui.use(['form', 'element', 'layer'], function () {
+            var element = layui.element;
+            var layer = layui.layer;
+            var form = layui.form;
+            form.render('select');
+        });
+    </script>
+</body>
+</html>
