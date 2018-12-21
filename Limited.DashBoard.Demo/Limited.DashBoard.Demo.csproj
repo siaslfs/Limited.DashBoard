@@ -5,11 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="index.html" />
-    <EmbeddedResource Include="lee\vue.min.js" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

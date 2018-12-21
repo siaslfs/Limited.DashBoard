@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Limited.AspNetCore.LeeUI
+namespace Limited.DashBoard.Demo
 {
     public class Program
     {

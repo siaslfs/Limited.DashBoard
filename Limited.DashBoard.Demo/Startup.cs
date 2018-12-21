@@ -1,10 +1,13 @@
-﻿using Limited.DashBoard;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Limited.AspNetCore.LeeUI
+namespace Limited.DashBoard.Demo
 {
     public class Startup
     {
@@ -23,20 +26,11 @@ namespace Limited.AspNetCore.LeeUI
                 app.UseDeveloperExceptionPage();
             }
             app.UseStaticFiles();
-            //app.LeeUIIndex();
-
-            //app.UseFileServer(new FileServerOptions()
-            //{
-            //    RequestPath = PathString.FromUriComponent($"/lee"),
-            //    FileProvider = (new EmbeddedFileProvider(typeof(Startup).Assembly, "Lee.AspNetCore.LeeUI.lee")),
-            //    EnableDirectoryBrowsing = true
-            //});
             app.UseMvc();
             app.UseService(env);
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync(
-                    $"Hello world");
+                await context.Response.WriteAsync("Hello World!");
             });
         }
     }
