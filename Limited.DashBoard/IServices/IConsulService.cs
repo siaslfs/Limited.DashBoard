@@ -11,7 +11,7 @@ namespace Limited.DashBoard.IServices
     /// <summary>
     /// Consul服务
     /// </summary>  
-    [HttpHost("http://45.32.8.16:8500")] // HttpHost可以在Config传入覆盖
+    [HttpHost("http://45.32.8.16:85")] // HttpHost可以在Config传入覆盖
     public interface IConsulService : IHttpApi
     {
         /// <summary>
