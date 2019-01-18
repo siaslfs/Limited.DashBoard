@@ -8,7 +8,7 @@
     <script src="./layui.js"></script>
     <script src="./axios.min.js"></script>
     <script src="./core-min.js"></script>
-    <script src="./enc-base64-min.js"></script> 
+    <script src="./enc-base64-min.js"></script>
 
     <style>
         #app {
@@ -51,7 +51,6 @@
                     </ul>
                 </div>
             </div>
-
             <div class="layui-body">
                 <!-- 内容主体区域 -->
                 <div style="padding: 15px;">
@@ -76,13 +75,11 @@
                                             </div>
                                         </div>
 
-                                        <div class="layui-form-item">
+                                        <div class="layui-form-item" lay-filter="renderStyle">
                                             <label class="layui-form-label">请求方法：</label>
                                             <div class="layui-input-block">
-                                                <select name="city" lay-verify="required" v-model="item.HttpMethods" lay-search="" class="layui-select">
-                                                    <option value="">直接选择或搜索选择</option>
-                                                    <option v-for="maker in HttpMethodsOptions" v-bind:value="maker.value">{{ maker.label }}</option>
-                                                </select>
+                                                <label><input type="checkbox" name="HttpMethods" lay-skin="primary" title="GET" v-model="item.HttpMethods.HttpGet" />GET</label>
+                                                <label><input type="checkbox" name="HttpMethods" lay-skin="primary" title="POST" v-model="item.HttpMethods.HttpPost" />POST</label>
                                             </div>
                                         </div>
 
@@ -124,12 +121,10 @@
                                                 <input type="text" name="title" required lay-verify="required" placeholder="请输入重试次数" autocomplete="off" class="layui-input" v-model="QItem.RetryIntervalMilliseconds">
                                             </div>
                                         </div>
-                                        <div class="layui-form-item">
+                                        <div class="layui-form-item" lay-filter="renderStyle">
                                             <label class="layui-form-label">是否启用熔断：</label>
                                             <div class="layui-input-block">
-                                                <div class="layui-input-block">
-                                                    <input type="checkbox" lay-skin="switch" v-model="QItem.IsEnableBreaker" name="QItem.IsEnableBreaker ? 'open' : 'close'" lay-text="启用|停用">
-                                                </div>
+                                                <label><input type="checkbox" name="open" v-model="QItem.IsEnableBreaker" lay-skin="primary" title="启用">启用</label>
                                             </div>
                                         </div>
 
@@ -182,7 +177,16 @@
             </div>
         </div>
     </div>
+
     <script>
+        var element, layer, form;
+        layui.use(['form', 'element', 'layer'], function () {
+            form = layui.form;
+            element = layui.element;
+            layer = layui.layer;
+            form.render();
+        });
+
         new Vue({
             el: '#app',
             data: {
@@ -198,7 +202,7 @@
                 KeyValue: [{
                     Target: '',
                     SourcePathRegex: '',
-                    HttpMethods: '',
+                    HttpMethods: { "HttpGet": false, "HttpPost": false },
                     Version: '',
                     TargetService: '',
                     TargetPathRegex: '',
@@ -215,7 +219,7 @@
                 SingleValue: [{
                     Target: '',
                     SourcePathRegex: '',
-                    HttpMethods: '',
+                    HttpMethods: { "HttpGet": false, "HttpPost": false },
                     Version: '',
                     TargetService: '',
                     TargetPathRegex: '',
@@ -248,7 +252,7 @@
                             _this.$data.KeyValue = [{
                                 Target: '',
                                 SourcePathRegex: '',
-                                HttpMethods: '',
+                                HttpMethods: { "HttpGet": false, "HttpPost": false },
                                 Version: '',
                                 TargetService: '',
                                 TargetPathRegex: '',
@@ -266,18 +270,15 @@
                     });
                 },
                 SubmitKeyValue: function () {
-                    debugger;
                     var _this = this;
-                    console.log(_this.$data.KeyValue);
                     if (!_this.$data.IsEdit) {
                         _this.$data.KeyValue.push(_this.$data.SingleValue[0]);
                     }
                     var params = new URLSearchParams();
+                    debugger; 
                     params.append('KeyValue', JSON.stringify(_this.$data.KeyValue));
-
                     //发送post请求
                     axios.post('/limit/consul/put', params).then(function (res) {
-                        console.log(res);
                         alert(res.data);
                     }).catch(function (error) {
                         alert(error);
@@ -290,15 +291,15 @@
                     });
                     _this.$data.ChooseIndex = objIndex;
                     _this.$data.IsEdit = true;
-
-                    console.log(_this.$data.SingleValue);
+                    form.render("checkbox", "renderStyle");
                 },
                 CancelKeyValue: function () {
                     var _this = this;
+                    _this.$data.IsEdit = false;
                     _this.$data.SingleValue = [{
                         Target: '',
                         SourcePathRegex: '',
-                        HttpMethods: '',
+                        HttpMethods: { "HttpGet": false, "HttpPost": false },
                         Version: '',
                         TargetService: '',
                         TargetPathRegex: '',
@@ -314,14 +315,8 @@
                     }];
                 }
             }
-        })
-
-        layui.use(['form', 'element', 'layer'], function () {
-            var element = layui.element;
-            var layer = layui.layer;
-            var form = layui.form;
-            form.render('select');
         });
+
     </script>
 </body>
 </html>
